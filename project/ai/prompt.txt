@@ -1,0 +1,79 @@
+# Web Application
+
+Generate a react web application front end for our **scene driven** Babylon Toolkit game project. Please reference the https://github.com/BabylonJS/BabylonToolkit repo for details about
+web game development using the **Babylon Toolkit**. Content is exported from Unity as interactive GLTF scene files that support **script components**. 
+
+
+# Script Components
+
+The **Babylon Toolkit** (https://www.babylontoolkit.com/) provides modern game engine mechanics with a familiar Unity like scripting system to fast track native web game
+development using BabylonJS. Details can be found at repo https://github.com/BabylonJS/BabylonToolkit
+
+The toolkit allow you to code faster with intelligent tooling and mechanics using a familiar Unity like scripting model:
+```
+import { ScriptComponent } from "@babylonjs-toolkit/next";
+
+export class DemoComponent extends ScriptComponent {
+  public message: string = "Hello Babylon Toolkit";
+
+  protected start(): void {
+    console.log(this.message);
+  }
+
+  protected update(): void {
+    let deltaTime: number = this.getDeltaTime();
+    this.transform.rotate(BABYLON.Axis.Y, deltaTime);
+  }
+}
+
+```
+
+
+# Content Creation Tools 
+
+The **Babylon Toolkit Unity Exporter** (https://github.com/BabylonJS/BabylonToolkit/tree/master/Editors/Unity) is a **Content Creation Tool** used to export interactive
+scene files with extra UnityGLTF metadata to instantiate **Babylon Toolkit Script Components** classes that have be encoded as **extras**.
+
+
+# React Component Framework
+
+The **Babylon Toolkit React Framework** will be installed that actually renders the interactive scene as a route. The framework already includes the
+`ApplicationRoute` and `BabylonSceneViewer` react components:
+```
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/play" element={
+          <ApplicationRoute allowDevMode={true}>
+            <BabylonSceneViewer rootPath="/scenes/" sceneFile="mainmenu.gltf" allowQueryParams={true} enableCustomOverlay={false} />
+          </ApplicationRoute>} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+```
+
+React router navigation can be used to load scenes from **anywhere**:
+```
+navigate("/play", { state: { fromApp: true, rootPath: "/scenes/", sceneFile: "levelone.gltf" } });
+```
+
+or load a blank scene at runtime and handle creation in code:
+```
+navigate("/play", { state: { fromApp: true, sceneFile: "_blank", auxiliaryData: "anything" } });
+```
+
+
+# Important Project Create Notes
+
+You must create a comprehensive web application with **ALL** the required user interfaces using VITE, REACT and TYPESCRIPT.
+The app should use the specified **HTML UI Template** or default to Tailwind CSS if not specified.
+The app should have a `Main Menu` home page type feel and support for user presence and login.
+The app should have some FILLER gaming content like `User Achievements` and `Leaderboards`.
+
+
+# Complete Web Application Details
+
+{ GAME DETAILS INCLUDING CONTEXT GO HERE }

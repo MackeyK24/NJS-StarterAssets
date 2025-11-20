@@ -1,0 +1,21 @@
+{
+	"aws": {
+		"profile": "default",
+		"region": "us-east-1",
+		"s3Bucket": "your-s3-bucket-name",
+		"s3Prefix": "",
+		"cloudFrontDistributionId": "YOUR_CLOUDFRONT_DISTRIBUTION_ID",
+		"invalidatePaths": [
+			"/*"
+		]
+	},
+	"dist": {
+		"folder": "dist",
+		"cacheControl": {
+			"default": "public, max-age=31536000, immutable",
+			"byExtension": {
+				".html": "public, max-age=300, must-revalidate"
+			}
+		}
+	}
+}
