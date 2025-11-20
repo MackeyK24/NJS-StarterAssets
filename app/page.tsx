@@ -63,7 +63,7 @@ export default function Home() {
           >
             Documentation
           </a>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense>
             <PlayDemoButton />
           </Suspense>
         </div>

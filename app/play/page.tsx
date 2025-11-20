@@ -4,7 +4,7 @@ import ApplicationRoute from "../../src/babylon/system/routing";
 
 export default function Play() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <ApplicationRoute allowDevMode={true}>
           <BabylonSceneViewer rootPath="/scenes/" sceneFile="samplescene.gltf" allowQueryParams={true} enableCustomOverlay={false} />
       </ApplicationRoute>
