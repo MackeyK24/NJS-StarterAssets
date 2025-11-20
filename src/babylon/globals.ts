@@ -27,7 +27,6 @@ class GameManager {
         {
             if (globalThis.HK == null || globalThis.HKP == null)
             {
-                // @ts-ignore - This initializes fresh physics for this scene
                 globalThis.HK = await HavokPhysics();
                 globalThis.HKP = new HavokPlugin(false);
             }
