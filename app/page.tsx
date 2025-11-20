@@ -1,4 +1,5 @@
 import Image from "next/image";
+import PlayDemoButton from "../src/babylon/button/demo";
 
 export default function Home() {
   return (
@@ -58,6 +59,7 @@ export default function Home() {
           >
             Documentation
           </a>
+          <PlayDemoButton />
         </div>
       </main>
     </div>
