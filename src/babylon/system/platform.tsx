@@ -30,7 +30,7 @@ export type LocationState = {
 export type UnifiedNavigateFunction = (path: string, options?: { state?: NavigationState; replace?: boolean }) => void;
 
 // Session storage key for navigation state
-const NAV_STATE_KEY = 'state';
+const NAV_STATE_KEY = 'njs_navigation_state';
 
 /**
  * Unified navigation hook for Next.js
@@ -45,27 +45,41 @@ export function useUnifiedNavigation(): {
   const searchParams = useSearchParams();
 
   const navigate: UnifiedNavigateFunction = useCallback((path: string, options?: { state?: NavigationState; replace?: boolean }) => {
-    let fullPath = path;
-    if (options?.state) {
-      const stateParam = encodeURIComponent(JSON.stringify(options.state));
-      fullPath = `${path}?${NAV_STATE_KEY}=${stateParam}`;
+    // Store state in session storage if provided (client-side only)
+    if (typeof window !== 'undefined') {
+      if (options?.state) {
+        try {
+          sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(options.state));
+        } catch (e) {
+          console.warn('Failed to store navigation state:', e);
+        }
+      } else {
+        // Clear state if no state is provided
+        try {
+          sessionStorage.removeItem(NAV_STATE_KEY);
+        } catch (e) {
+          console.warn('Failed to clear navigation state:', e);
+        }
+      }
     }
 
-    // Navigate using Next.js router
+    // Navigate using Next.js router without state in URL
     if (options?.replace) {
-      router.replace(fullPath);
+      router.replace(path);
     } else {
-      router.push(fullPath);
+      router.push(path);
     }
   }, [router]);
 
   const location: LocationState = useMemo(() => {
-    // Retrieve state from query params
+    // Retrieve state from session storage (client-side only)
     let state: NavigationState | undefined;
-    const stateParam = searchParams?.get(NAV_STATE_KEY);
-    if (stateParam) {
+    if (typeof window !== 'undefined') {
       try {
-        state = JSON.parse(decodeURIComponent(stateParam));
+        const storedState = sessionStorage.getItem(NAV_STATE_KEY);
+        if (storedState) {
+          state = JSON.parse(storedState);
+        }
       } catch (e) {
         console.warn('Failed to parse navigation state:', e);
       }
