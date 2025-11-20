@@ -17,6 +17,7 @@ import GameManager from "../globals";
 import "./babylon.css";
 
 export declare type SceneViewerProps = {
+  fullPage?: boolean;
   rootPath?: string;
   sceneFile?: string;
   auxiliaryData?: any;
@@ -25,16 +26,12 @@ export declare type SceneViewerProps = {
 };
 
 /**
- * ES6 Interactive Babylon Toolkit Scene Viewer (GLTF)
+ * NJS Interactive Babylon Toolkit Scene Viewer (GLTF)
  * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf', auxiliaryData: null } });
- * @param fromApp navigation flag
- * @param rootPath scene location
- * @param sceneFile scene filename
- * @param auxiliaryData aux data string
  */
 
 function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes<HTMLCanvasElement>) {
-  const { rootPath, sceneFile, auxiliaryData, allowQueryParams, enableCustomOverlay } = props;
+  const { fullPage, rootPath, sceneFile, auxiliaryData, allowQueryParams, enableCustomOverlay } = props;
   const { navigate, location } = useUnifiedNavigation();
   const createScene = useCallback(async (scene:Scene) => {
     if (scene.isDisposed) return; // Note: Strict mode safety
@@ -96,13 +93,13 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         scene.onDisposeObservable.remove(disposeObserver);
       }
     }
-  }, [rootPath, sceneFile, auxiliaryData, allowQueryParams, location, navigate]);
+  }, [fullPage, rootPath, sceneFile, auxiliaryData, allowQueryParams, location, navigate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   // OPTIONAL: Add custom loading div over the root div and disable the default loading screen
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (    
-    <div className="viewer">
+    <div className={`${fullPage ? 'page-viewer' : 'div-viewer'}`}>
       <BaseSceneViewer webgpu={true} antialias={true} adaptToDeviceRatio={true} onCreateScene={createScene} className="canvas" />
       {props.enableCustomOverlay && <CustomOverlay />}
     </div>
