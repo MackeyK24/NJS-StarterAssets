@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import PlayDemoButton from "../src/babylon/button/demo";
 
@@ -62,7 +63,9 @@ export default function Home() {
           >
             Documentation
           </a>
-          <PlayDemoButton />
+          <Suspense fallback={<div>Loading...</div>}>
+            <PlayDemoButton />
+          </Suspense>
         </div>
       </main>
     </div>
