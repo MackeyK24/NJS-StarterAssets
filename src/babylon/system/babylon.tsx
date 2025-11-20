@@ -55,7 +55,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       let isDevelopment: boolean = process.env.NODE_ENV === "development";
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
-      let babylonSceneFile: string = sceneFile || "samplescene.gltf";
+      let babylonSceneFile: string = sceneFile || "mainmenu.gltf";
       let babylonAuxiliaryData:string = auxiliaryData || null;
       if (allowQueryParams === true) {
         babylonRootPath = location?.state?.rootPath || babylonRootPath;
