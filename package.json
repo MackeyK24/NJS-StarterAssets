@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "dev": "PORT=${PORT:-8080} next dev -p $PORT & sleep 3 && open http://localhost:$PORT",
+    "dev": "next dev -p 8080 & sleep 3 && open http://localhost:8080",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

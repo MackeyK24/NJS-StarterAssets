@@ -34,6 +34,9 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
+          <p>
+          <small><a href="https://www.babylontoolkit.com" target="_blank">Babylon Toolkit Game Development</a></small>
+          </p>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
