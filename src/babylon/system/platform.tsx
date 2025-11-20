@@ -30,7 +30,7 @@ export type LocationState = {
 export type UnifiedNavigateFunction = (path: string, options?: { state?: NavigationState; replace?: boolean }) => void;
 
 // Session storage key for navigation state
-const NAV_STATE_KEY = '__navigation_state__';
+const NAV_STATE_KEY = 'state';
 
 /**
  * Unified navigation hook for Next.js
@@ -45,34 +45,29 @@ export function useUnifiedNavigation(): {
   const searchParams = useSearchParams();
 
   const navigate: UnifiedNavigateFunction = useCallback((path: string, options?: { state?: NavigationState; replace?: boolean }) => {
-    // Store state in sessionStorage before navigation
+    let fullPath = path;
     if (options?.state) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(options.state));
-      }
+      const stateParam = encodeURIComponent(JSON.stringify(options.state));
+      fullPath = `${path}?${NAV_STATE_KEY}=${stateParam}`;
     }
 
     // Navigate using Next.js router
     if (options?.replace) {
-      router.replace(path);
+      router.replace(fullPath);
     } else {
-      router.push(path);
+      router.push(fullPath);
     }
   }, [router]);
 
   const location: LocationState = useMemo(() => {
-    // Retrieve state from sessionStorage
+    // Retrieve state from query params
     let state: NavigationState | undefined;
-    if (typeof window !== 'undefined') {
-      const storedState = sessionStorage.getItem(NAV_STATE_KEY);
-      if (storedState) {
-        try {
-          state = JSON.parse(storedState);
-          // Clear after reading to avoid stale state
-          sessionStorage.removeItem(NAV_STATE_KEY);
-        } catch (e) {
-          console.warn('Failed to parse navigation state:', e);
-        }
+    const stateParam = searchParams?.get(NAV_STATE_KEY);
+    if (stateParam) {
+      try {
+        state = JSON.parse(decodeURIComponent(stateParam));
+      } catch (e) {
+        console.warn('Failed to parse navigation state:', e);
       }
     }
 
