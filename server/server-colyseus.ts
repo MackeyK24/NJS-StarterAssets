@@ -126,7 +126,7 @@ async function main(): Promise<void> {
 
   // Let Colyseus start listening; it will use the shared `server` internally
   gameServer.listen(port);
-  console.log(`> Ready on http://localhost:${port}`);
+  console.log(`> Colyseus ready on http://localhost:${port}`);
 }
 
 /**

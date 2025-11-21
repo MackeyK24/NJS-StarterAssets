@@ -127,7 +127,7 @@ async function main(): Promise<void> {
 
   const port: number = Number(process.env.PORT ?? 8080);
   server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Sockets ready on http://localhost:${port}`);
   });
 }
 

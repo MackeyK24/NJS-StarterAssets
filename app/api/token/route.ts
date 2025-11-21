@@ -1,11 +1,13 @@
 // app/api/token/route.ts
-import { auth } from "@/server/auth-express";
+import { auth } from "@/server/auth-providers";
 import { signInternalToken } from "@/server/auth-internals";
 
 /**
  * GET /api/token
  * Requires a valid NextAuth session.
  * Returns an internal JWT to use with Express / Colyseus, etc.
+ * Example Client Usage:
+ * const tokenRes = await fetch("/api/token", { credentials: "include" });
  */
 export async function GET() {
   const session = await auth();
