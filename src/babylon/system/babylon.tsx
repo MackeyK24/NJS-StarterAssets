@@ -21,17 +21,18 @@ export declare type SceneViewerProps = {
   rootPath?: string;
   sceneFile?: string;
   auxiliaryData?: any;
+  sceneController?: string;
   allowQueryParams?: boolean;
   enableCustomOverlay?: boolean;
 };
 
 /**
- * NJS Interactive Babylon Toolkit Scene Viewer (GLTF)
- * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf', auxiliaryData: null } });
+ * ES6 Interactive Babylon Toolkit Scene Viewer (GLTF)
+ * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf', sceneController: null, auxiliaryData: null } });
  */
 
 function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes<HTMLCanvasElement>) {
-  const { fullPage, rootPath, sceneFile, auxiliaryData, allowQueryParams, enableCustomOverlay } = props;
+  const { fullPage, rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, enableCustomOverlay } = props;
   const { navigate, location } = useUnifiedNavigation();
   const createScene = useCallback(async (scene:Scene) => {
     if (scene.isDisposed) return; // Note: Strict mode safety
@@ -53,12 +54,14 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
       let babylonSceneFile: string = sceneFile || "mainmenu.gltf";
+      let babylonSceneController: string = sceneController || null;
       let babylonAuxiliaryData:string = auxiliaryData || null;
       if (allowQueryParams === true) {
         babylonRootPath = location?.state?.rootPath || babylonRootPath;
         babylonSceneFile = location?.state?.sceneFile || babylonSceneFile;
+        babylonSceneController = location?.state?.sceneController || babylonSceneController;
         babylonAuxiliaryData = location?.state?.auxiliaryData || babylonAuxiliaryData;
-        if (isDevelopment === true) {
+        if (isDevelopment === true) { // Note: Unity Editor Development Preview Query Param Support
           babylonRootPath = defaultPageUrl.searchParams.get("root") || babylonRootPath;
           babylonSceneFile = defaultPageUrl.searchParams.get("scene") || babylonSceneFile;
           babylonAuxiliaryData = defaultPageUrl.searchParams.get("aux") || babylonAuxiliaryData;
@@ -81,6 +84,15 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // STEP 3 - Finalize scene setup after assets are loaded and hide the loading screen
         /////////////////////////////////////////////////////////////////////////////////////////////////////
+        try {
+          if (babylonSceneController != null && babylonSceneController !== "") {
+
+            // TODO: Create Scene Controller Transform and Attach Runtime Script Component
+
+          }
+        } catch (e) {
+          console.error("Failed to initialize scene controller", e);
+        }
         GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
         SceneManager.HideLoadingScreen(scene.getEngine());
         SceneManager.FocusRenderCanvas(scene);
@@ -93,13 +105,13 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         scene.onDisposeObservable.remove(disposeObserver);
       }
     }
-  }, [fullPage, rootPath, sceneFile, auxiliaryData, allowQueryParams, location, navigate]);
+  }, [fullPage, rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, location, navigate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   // OPTIONAL: Add custom loading div over the root div and disable the default loading screen
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (    
-    <div className={`${fullPage ? 'page-viewer' : 'div-viewer'}`}>
+    <div className={fullPage ? "page-viewer" : "div-viewer"}>
       <BaseSceneViewer webgpu={true} antialias={true} adaptToDeviceRatio={true} onCreateScene={createScene} className="canvas" />
       {props.enableCustomOverlay && <CustomOverlay />}
     </div>
