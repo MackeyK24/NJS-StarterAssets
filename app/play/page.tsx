@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import BabylonSceneViewer from "../../src/babylon/system/babylon";
-import ApplicationRoute from "../../src/babylon/system/routing";
+import ApplicationRoute from "@/src/babylon/system/routing";
+import BabylonSceneViewer from "@/src/babylon/system/babylon";
 
 export default function Play() {
   return (
