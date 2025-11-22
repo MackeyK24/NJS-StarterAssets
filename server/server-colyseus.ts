@@ -5,6 +5,8 @@ import express, { Request, Response, NextFunction } from "express";
 import { Server as ColyseusServer } from "colyseus";
 import { monitor } from "@colyseus/monitor";
 import { verifyInternalToken } from "./auth-internals";
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig(process.cwd());
 
 const dev: boolean = process.env.NODE_ENV !== "production";
 const nextApp = next({ dev });
