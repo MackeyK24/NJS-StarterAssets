@@ -8,6 +8,8 @@
   padding: 0;
   z-index: 100;
   overflow: hidden;
+  border: none;
+  outline: none;
   color: #E0684B; /* Default Babylon Toolkit Soft Orange */
   background-color: #2A2342; /* Default Babylon Toolkit Base Purple */
   contain: layout style paint; /* Isolates layout, style, and paint for better performance */
@@ -22,6 +24,8 @@
   padding: 0;
   z-index: 100;
   overflow: hidden;
+  border: none;
+  outline: none;
   color: #E0684B; /* Default Babylon Toolkit Soft Orange */
   background-color: #2A2342; /* Default Babylon Toolkit Base Purple */
   contain: layout style paint; /* Isolates layout, style, and paint for better performance */
@@ -38,6 +42,8 @@
   padding: 0;
   z-index: 101;
   overflow: hidden;
+  border: none;
+  outline: none;
   will-change: auto; /* Hints browser to optimize for potential changes */
 }
 
