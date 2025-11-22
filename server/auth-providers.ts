@@ -1,4 +1,4 @@
-// auth.ts
+// Note: Create a strong secret for NextAuth (openssl rand -base64 32)
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
