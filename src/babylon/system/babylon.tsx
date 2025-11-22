@@ -54,8 +54,8 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
       let babylonSceneFile: string = sceneFile || "mainmenu.gltf";
-      let babylonSceneController: string = sceneController || null;
-      let babylonAuxiliaryData:string = auxiliaryData || null;
+      let babylonSceneController:string | undefined = sceneController;
+      let babylonAuxiliaryData:string | undefined = auxiliaryData;
       if (allowQueryParams === true) {
         babylonRootPath = location?.state?.rootPath || babylonRootPath;
         babylonSceneFile = location?.state?.sceneFile || babylonSceneFile;
@@ -86,16 +86,25 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         try {
           if (babylonSceneController != null && babylonSceneController !== "") {
-
-            // TODO: Create Scene Controller Transform and Attach Runtime Script Component
-
+            const ScriptComponentClass = Utilities.InstantiateClass(babylonSceneController);
+            if (ScriptComponentClass != null) {
+                const scriptComponent: ScriptComponent = new ScriptComponentClass(new TransformNode("SceneController", scene), scene, {});
+                if (scriptComponent != null) {
+                  SceneManager.AttachScriptComponent(scriptComponent, babylonSceneController, false);
+                } else {
+                  Tools.Warn("Failed to instantiate script class: " + babylonSceneController);
+                }
+            } else {
+                Tools.Warn("Failed to locate script class: " + babylonSceneController);
+            }
           }
         } catch (e) {
           console.error("Failed to initialize scene controller", e);
+        } finally {
+          GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
+          SceneManager.HideLoadingScreen(scene.getEngine());
+          SceneManager.FocusRenderCanvas(scene);
         }
-        GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-        SceneManager.HideLoadingScreen(scene.getEngine());
-        SceneManager.FocusRenderCanvas(scene);
       });
     } catch (error) {
       console.error("Failed to load babylon scene assets", error);
