@@ -20,6 +20,7 @@ export declare type SceneViewerProps = {
   fullPage?: boolean;
   rootPath?: string;
   sceneFile?: string;
+  scriptBundle?: string;
   auxiliaryData?: any;
   sceneController?: string;
   allowQueryParams?: boolean;
@@ -28,11 +29,11 @@ export declare type SceneViewerProps = {
 
 /**
  * ES6 Interactive Babylon Toolkit Scene Viewer (GLTF)
- * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf', sceneController: null, auxiliaryData: null } });
+ * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf' } });
  */
 
 function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes<HTMLCanvasElement>) {
-  const { fullPage, rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, enableCustomOverlay } = props;
+  const { fullPage, rootPath, sceneFile, scriptBundle, auxiliaryData, sceneController, allowQueryParams, enableCustomOverlay } = props;
   const { navigate, location } = useUnifiedNavigation();
   const createScene = useCallback(async (scene:Scene) => {
     if (scene.isDisposed) return; // Note: Strict mode safety
@@ -54,11 +55,13 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
       let babylonSceneFile: string = sceneFile || "mainmenu.gltf";
+      let babylonScriptBundle: string | undefined = scriptBundle;
       let babylonSceneController:string | undefined = sceneController;
       let babylonAuxiliaryData:string | undefined = auxiliaryData;
       if (allowQueryParams === true) {
         babylonRootPath = location?.state?.rootPath || babylonRootPath;
         babylonSceneFile = location?.state?.sceneFile || babylonSceneFile;
+        babylonScriptBundle = location?.state?.scriptBundle || babylonScriptBundle;
         babylonSceneController = location?.state?.sceneController || babylonSceneController;
         babylonAuxiliaryData = location?.state?.auxiliaryData || babylonAuxiliaryData;
         if (isDevelopment === true) { // Note: Unity Editor Development Preview Query Param Support
@@ -69,6 +72,10 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       }
       if (babylonAuxiliaryData != null && babylonAuxiliaryData !== "") {
         SceneManager.SetAuxiliaryData(scene, babylonAuxiliaryData);
+      }
+      if (babylonScriptBundle != null && babylonScriptBundle !== "") {
+        const scriptBundleKey = "SCRIPTBUNDLE_JS_" + babylonScriptBundle.replace(/[^a-zA-Z0-9_]/g, '_');
+        globalThis[scriptBundleKey] = globalThis[scriptBundleKey] || await Tools.LoadScriptAsync(babylonScriptBundle);
       }
       if ((babylonRootPath != null && babylonRootPath !== "" && babylonRootPath.toLowerCase() === "_blank") || (babylonSceneFile != null && babylonSceneFile !== "" && babylonSceneFile.toLowerCase() === "_blank")) {
           GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
@@ -114,7 +121,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         scene.onDisposeObservable.remove(disposeObserver);
       }
     }
-  }, [rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, location, navigate]);
+  }, [rootPath, sceneFile, scriptBundle, auxiliaryData, sceneController, allowQueryParams, location, navigate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   // OPTIONAL: Add custom loading div over the root div and disable the default loading screen
