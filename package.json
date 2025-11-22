@@ -9,9 +9,9 @@
     "dev:socketio": "PORT=8080 tsx server/server-socketio.ts & sleep 3 && open http://localhost:8080",
     "build": "next build",
     "start": "npm run kill-port && npm run start:classic",
-    "start:classic": "NODE_ENV=production tsx server/server-classic.ts",
-    "start:colyseus": "NODE_ENV=production tsx server/server-colyseus.ts",
-    "start:socketio": "NODE_ENV=production tsx server/server-socketio.ts",
+    "start:classic": "NODE_ENV=production tsx server/server-classic.ts & sleep 3 && open http://localhost:8080",
+    "start:colyseus": "NODE_ENV=production tsx server/server-colyseus.ts & sleep 3 && open http://localhost:8080",
+    "start:socketio": "NODE_ENV=production tsx server/server-socketio.ts & sleep 3 && open http://localhost:8080",
     "lint": "eslint",
     "kill-port": "npx kill-port 8080"
   },
