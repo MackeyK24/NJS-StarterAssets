@@ -114,7 +114,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         scene.onDisposeObservable.remove(disposeObserver);
       }
     }
-  }, [fullPage, rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, location, navigate]);
+  }, [rootPath, sceneFile, auxiliaryData, sceneController, allowQueryParams, location, navigate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   // OPTIONAL: Add custom loading div over the root div and disable the default loading screen
