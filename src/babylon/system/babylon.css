@@ -6,7 +6,7 @@
   height: 100%;
   margin: 0;
   padding: 0;
-  z-index: 0;
+  z-index: 100;
   overflow: hidden;
   color: #E0684B; /* Default Babylon Toolkit Soft Orange */
   background-color: #2A2342; /* Default Babylon Toolkit Base Purple */
@@ -20,7 +20,7 @@
   height: 100%;
   margin: 0;
   padding: 0;
-  z-index: 0;
+  z-index: 100;
   overflow: hidden;
   color: #E0684B; /* Default Babylon Toolkit Soft Orange */
   background-color: #2A2342; /* Default Babylon Toolkit Base Purple */
@@ -36,7 +36,7 @@
   height: 100%;
   margin: 0;
   padding: 0;
-  z-index: 1;
+  z-index: 101;
   overflow: hidden;
   will-change: auto; /* Hints browser to optimize for potential changes */
 }
@@ -49,7 +49,7 @@
   height: 100%;
   margin: 0;
   padding: 0;
-  z-index: 10;
+  z-index: 110;
   overflow: hidden;
   pointer-events: none;
   background-color: transparent;
