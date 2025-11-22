@@ -1,2 +1,2 @@
-# Babylon Toolkit React Framework
+# Babylon Toolkit React Framework (NEXT.JS)
 React component documentation
