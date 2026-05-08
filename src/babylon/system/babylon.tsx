@@ -14,6 +14,7 @@ import { useCallback } from "react";
 import { useUnifiedNavigation, UnifiedNavigateFunction, LocationState } from "./platform";
 import BaseSceneViewer from "./viewer";
 import CustomOverlay from "../custom/overlay";
+import SplashScreen from "../custom/splash";
 import GameManager from "../globals";
 import "./babylon.css";
 
