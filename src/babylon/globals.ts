@@ -66,16 +66,30 @@ class GameManager {
         if (splash) splash.style.display = "block";
     }
     /** Hide the splash screen with optional delay and fade effect */
-    public static HideSplashScreen(scene:Scene = null, delay: number = 0, fade: number = 0): void {
+    public static HideSplashScreen(scene: Scene = null, delay: number = 0): void {
         setTimeout(() => {
             if (scene != null && !scene.isDisposed) {
                 SceneManager.HideLoadingScreen(scene.getEngine());
                 SceneManager.FocusRenderCanvas(scene);
             }
-            // TODO: Support fade out effect before hiding splash screen
             const splash = document.getElementById("splash-screen");
-            if (splash) splash.style.display = "none";
+            if (splash) {
+                splash.style.opacity = "0";
+                const onFadeEnd = () => {
+                    splash.style.display = "none";
+                    splash.removeEventListener("transitionend", onFadeEnd);
+                };
+                splash.addEventListener("transitionend", onFadeEnd);
+            }
         }, delay);
+    }
+    /** Update the splash screen status message */
+    public static UpdateSplashScreenStatus(message: string): void {
+        const splash = document.getElementById("splash-screen");
+        if (splash) {
+            const statusText = splash.querySelector("#xbabylonjsStatusTextDiv");
+            if (statusText) statusText.textContent = message;
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
