@@ -15,8 +15,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 // Type definitions for unified navigation
 export type NavigationState = {
   fromApp?: boolean;
+  gameMode?: string;
   rootPath?: string;
   sceneFile?: string;
+  assetFiles?: string[];
+  importMeshes?: string[];
   auxiliaryData?: string;
   [key: string]: any;
 };

@@ -47,7 +47,8 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
     // STEP 1 - Initialize the global runtime scene properties and react navigation system
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     try {
-      await GameManager.InitializeRuntime(scene, navigate, true, true, false);
+      GameManager.ShowSplashScreen();
+      await GameManager.InitializeRuntime(scene, navigate, true, false, false);
       if (disposed || scene.isDisposed) return; // Note: Strict mode safety
     
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,12 +58,16 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
       let babylonSceneFile: string = sceneFile || "mainmenu.gltf";
-      let babylonGameMode:string | undefined = gameMode;
+      let babylonGameMode:string | undefined = gameMode || "DefaultGameMode";
+      let babylonAssetFiles:string[] | undefined = assetFiles;
+      let babylonImportMeshes:string[] | undefined = importMeshes;
       let babylonAuxiliaryData:string | undefined = auxiliaryData;
       if (allowQueryParams === true) {
         babylonRootPath = location?.state?.rootPath || babylonRootPath;
         babylonSceneFile = location?.state?.sceneFile || babylonSceneFile;
         babylonGameMode = location?.state?.gameMode || babylonGameMode;
+        babylonAssetFiles = location?.state?.assetFiles || babylonAssetFiles;
+        babylonImportMeshes = location?.state?.importMeshes || babylonImportMeshes;
         babylonAuxiliaryData = location?.state?.auxiliaryData || babylonAuxiliaryData;
         if (isDevelopment === true) { // Note: Unity Editor Development Preview Query Param Support
           babylonRootPath = defaultPageUrl.searchParams.get("root") || babylonRootPath;
@@ -75,10 +80,24 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       }
       if ((babylonRootPath != null && babylonRootPath !== "" && babylonRootPath.toLowerCase() === "_blank") || (babylonSceneFile != null && babylonSceneFile !== "" && babylonSceneFile.toLowerCase() === "_blank")) {
           GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-          SceneManager.HideLoadingScreen(scene.getEngine());
-          SceneManager.FocusRenderCanvas(scene);
+          GameManager.HideSplashScreen(scene);
           return; // Note: Bail Out Early
       }
+      // Instantiate Game Mode Script Component Before Loading Assets
+      if (babylonGameMode != null && babylonGameMode !== "") {
+        const ScriptComponentClass = Utilities.InstantiateClass(babylonGameMode);
+        if (ScriptComponentClass != null) {
+            const scriptComponent: ScriptComponent = new ScriptComponentClass(new TransformNode("GameMode", scene), scene, {});
+            if (scriptComponent != null) {
+              SceneManager.AttachScriptComponent(scriptComponent, babylonGameMode, false);
+            } else {
+              Tools.Warn("Failed to instantiate script class: " + babylonGameMode);
+            }
+        } else {
+            Tools.Warn("Failed to locate script class: " + babylonGameMode);
+        }
+      }
+      // Load runtime assets using the toolkit assets manager which provides enhanced loading screen and dependency tracking features (e.g. for GLTF files with external dependencies like textures, binary geometry, etc.)
       let assetIndex: number = 0;
       let runtimeAssets:string [] = [babylonSceneFile];
       assetsManager = new AssetsManager(scene);
@@ -86,19 +105,19 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       const sceneTask: MeshAssetTask = assetsManager.addMeshTask("BabylonScene.Task.0", null, babylonRootPath, babylonSceneFile);
       sceneTask.onError = (task: MeshAssetTask, message?: string, exception?: any) => { console.error(message, exception); };
       // Optional Additional Import Mesh Tasks (GLTF Meshes) - Note: These can be used to preload additional GLTF assets that are not directly referenced by the main scene file but may be needed at runtime (e.g. for dynamic instantiation via script)
-      if (importMeshes != null && importMeshes.length > 0) {
-        runtimeAssets = runtimeAssets.concat(importMeshes);
-        for (const meshFile of importMeshes) {
+      if (babylonImportMeshes != null && babylonImportMeshes.length > 0) {
+        runtimeAssets = runtimeAssets.concat(babylonImportMeshes);
+        for (const meshFile of babylonImportMeshes) {
           assetIndex++;
           const meshTask: MeshAssetTask = assetsManager.addMeshTask(("BabylonScene.Task.Mesh." + assetIndex.toString()), "", babylonRootPath, meshFile);
           meshTask.onError = (task: MeshAssetTask, message?: string, exception?: any) => { console.error(message, exception); };
         }
       }
       // Optional Additional Asset Container Tasks (GLTF Prefabs) - Note: These can be used to preload additional GLTF assets that are not directly referenced by the main scene file but may be needed at runtime (e.g. for dynamic instantiation via script)
-      if (assetFiles != null && assetFiles.length > 0) {
+      if (babylonAssetFiles != null && babylonAssetFiles.length > 0) {
         let assetIndex: number = 0;
-        runtimeAssets = runtimeAssets.concat(assetFiles);
-        for (const assetFile of assetFiles) {
+        runtimeAssets = runtimeAssets.concat(babylonAssetFiles);
+        for (const assetFile of babylonAssetFiles) {
           assetIndex++;
           const assetTask: ContainerAssetTask = assetsManager.addContainerTask(("BabylonScene.Task." + assetIndex.toString()), null, babylonRootPath, assetFile);
           assetTask.onSuccess = (task: ContainerAssetTask) => {
@@ -117,28 +136,16 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         // STEP 3 - Finalize scene setup after assets are loaded and hide the loading screen
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         try {
-          if (babylonGameMode != null && babylonGameMode !== "") {
-            const ScriptComponentClass = Utilities.InstantiateClass(babylonGameMode);
-            if (ScriptComponentClass != null) {
-                const scriptComponent: ScriptComponent = new ScriptComponentClass(new TransformNode("GameMode", scene), scene, {});
-                if (scriptComponent != null) {
-                  SceneManager.AttachScriptComponent(scriptComponent, babylonGameMode, false);
-                } else {
-                  Tools.Warn("Failed to instantiate script class: " + babylonGameMode);
-                }
-            } else {
-                Tools.Warn("Failed to locate script class: " + babylonGameMode);
-            }
-          }
+          console.log("Babylon scene assets loaded successfully");
         } catch (e) {
           console.error("Failed to initialize game mode", e);
         } finally {
           GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-          SceneManager.HideLoadingScreen(scene.getEngine());
-          SceneManager.FocusRenderCanvas(scene);
+          GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
         }
       });
     } catch (error) {
+      GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       console.error("Failed to load babylon scene assets", error);
     } finally {
       assetsManager = null;
@@ -153,6 +160,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (    
     <div className={fullPage ? "page-viewer" : "div-viewer"}>
+      <SplashScreen />
       <BaseSceneViewer webgpu={true} antialias={true} adaptToDeviceRatio={true} onCreateScene={createScene} className="canvas" />
       {props.enableCustomOverlay && <CustomOverlay />}
     </div>

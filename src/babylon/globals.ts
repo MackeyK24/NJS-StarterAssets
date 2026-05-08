@@ -7,10 +7,16 @@ import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 import HavokPhysics from "@babylonjs/havok";
 import { SceneManager, LocalMessageBus } from "@babylonjs-toolkit/next";
 
+// Preload Game Mode Side Effects
+import "./classes/DefaultGameMode"; 
+import "./classes/DemoOneGameMode"; 
+import "./classes/DemoTwoGameMode"; 
+
 class GameManager {
     /** Initialize the game runtime environment */
     public static async InitializeRuntime(scene:Scene, navigateToFunction:any = null, enablePhysics:boolean = true, showLoadingScreen:boolean = true, hideEngineLoadingUI:boolean = false): Promise<void> {
         if (scene.isDisposed) return; // Note: Strict mode safety
+        GameManager.EventBus.ResetHandlers(); // Note: Reset any existing event handlers to prevent duplicates when navigating between scenes
         await SceneManager.InitializeRuntime(scene.getEngine(), { showDefaultLoadingScreen: showLoadingScreen, hideLoadingUIWithEngine: hideEngineLoadingUI });
         if (GameManager.IsDevelopmentMode) await import("@babylonjs/inspector");
         await import("@babylonjs-toolkit/dlc/DebugInformation");
@@ -48,6 +54,28 @@ class GameManager {
                 cleanupGlobals(); // Note: Force clean up if scene was disposed already
             }
         }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Splash Screen State
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /** Show the splash screen */
+    public static ShowSplashScreen(): void {
+        const splash = document.getElementById("splash-screen");
+        if (splash) splash.style.display = "block";
+    }
+    /** Hide the splash screen with optional delay and fade effect */
+    public static HideSplashScreen(scene:Scene = null, delay: number = 0, fade: number = 0): void {
+        setTimeout(() => {
+            if (scene != null && !scene.isDisposed) {
+                SceneManager.HideLoadingScreen(scene.getEngine());
+                SceneManager.FocusRenderCanvas(scene);
+            }
+            // TODO: Support fade out effect before hiding splash screen
+            const splash = document.getElementById("splash-screen");
+            if (splash) splash.style.display = "none";
+        }, delay);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
