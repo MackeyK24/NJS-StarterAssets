@@ -9,6 +9,7 @@
   z-index: 9999;
   overflow: hidden;
   pointer-events: none;
-  background-color: green;
+  color: #E0684B; /* Default Babylon Toolkit Soft Orange */
+  background-color: #2A2342; /* Default Babylon Toolkit Base Purple */
   will-change: auto; /* Optimizes for potential UI animations in React overlay */
 }
