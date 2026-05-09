@@ -4,16 +4,16 @@ import { SceneManager, ScriptComponent, LocalMessageBus } from "@babylonjs-toolk
 import { ThirdPersonPlayerController } from "@babylonjs-toolkit/dlc";
 import GameManager from "../globals";
 
-export class DemoOneGameMode extends ScriptComponent {
+export class DemoGameMode extends ScriptComponent {
     private readonly onSceneReadyHandler = (data: any) => { this.onSceneReady(data); };
 
-    constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "DemoOneGameMode") {
+    constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "DemoGameMode") {
         super(transform, scene, properties, alias);
         GameManager.EventBus.OnMessage("OnSceneReady", this.onSceneReadyHandler);
     }
 
     protected onSceneReady(data: any): void {
-        console.log("DemoOneGameMode - OnSceneReady():", data);
+        console.log("DemoGameMode - OnSceneReady():", data);
         try {
             const player = this.scene.getNodeByName("PlayerArmature") as TransformNode;
             if (player != null) {
@@ -38,4 +38,4 @@ export class DemoOneGameMode extends ScriptComponent {
     }
 }
 
-SceneManager.RegisterClass("DemoOneGameMode", DemoOneGameMode);
+SceneManager.RegisterClass("DemoGameMode", DemoGameMode);
