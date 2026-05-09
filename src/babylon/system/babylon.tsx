@@ -286,7 +286,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       console.error("Failed to load babylon scene assets", error);
     } finally {
       try {
-        GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
+        GameManager.HideSplashScreen(scene, GameManager.HideSplashScreenDelay); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       } catch (e) {
         console.error("Failed to initialize game mode", e);
       }
