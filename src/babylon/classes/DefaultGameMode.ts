@@ -4,14 +4,20 @@ import { SceneManager, ScriptComponent, LocalMessageBus } from "@babylonjs-toolk
 import GameManager from "../globals";
 
 export class DefaultGameMode extends ScriptComponent {
+    private readonly onSceneReadyHandler = (data: any) => { this.onSceneReady(data); };
 
     constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "DefaultGameMode") {
         super(transform, scene, properties, alias);
-        GameManager.EventBus.OnMessage("OnSceneReady", (data: any) => { this.onSceneReady(data); });
+        GameManager.EventBus.OnMessage("OnSceneReady", this.onSceneReadyHandler);
     }
 
     protected onSceneReady(data: any): void {
         console.log("DefaultGameMode - OnSceneReady():", data);
+    }
+
+    public override dispose(): void {
+        GameManager.EventBus.RemoveHandler("OnSceneReady", this.onSceneReadyHandler);
+        super.dispose();
     }
 }
 

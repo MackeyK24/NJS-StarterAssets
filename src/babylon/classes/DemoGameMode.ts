@@ -5,10 +5,11 @@ import { ThirdPersonPlayerController } from "@babylonjs-toolkit/dlc";
 import GameManager from "../globals";
 
 export class DemoOneGameMode extends ScriptComponent {
+    private readonly onSceneReadyHandler = (data: any) => { this.onSceneReady(data); };
 
     constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "DemoOneGameMode") {
         super(transform, scene, properties, alias);
-        GameManager.EventBus.OnMessage("OnSceneReady", (data: any) => { this.onSceneReady(data); });
+        GameManager.EventBus.OnMessage("OnSceneReady", this.onSceneReadyHandler);
     }
 
     protected onSceneReady(data: any): void {
@@ -29,6 +30,11 @@ export class DemoOneGameMode extends ScriptComponent {
             SceneManager.HideLoadingScreen(this.scene.getEngine());
             SceneManager.FocusRenderCanvas(this.scene);
         }
+    }
+
+    public override dispose(): void {
+        GameManager.EventBus.RemoveHandler("OnSceneReady", this.onSceneReadyHandler);
+        super.dispose();
     }
 }
 

@@ -6,8 +6,7 @@ import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Nullable } from "@babylonjs/core/types";
 import { Observer } from "@babylonjs/core/Misc/observable";
 import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
-import { AssetsManager } from "@babylonjs/core/Misc/assetsManager";
-import { ContainerAssetTask, MeshAssetTask } from "@babylonjs/core/Misc/assetsManager";
+import { ISceneLoaderProgressEvent, ImportMeshAsync, LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { SceneManager, ScriptComponent, Utilities } from "@babylonjs-toolkit/next";
 import { useCallback } from "react";
@@ -30,6 +29,24 @@ export declare type SceneViewerProps = {
   enableCustomOverlay?: boolean;
 };
 
+type AssetProgressMessage = {
+  assetName?: string;
+  fileName?: string;
+  rootPath?: string;
+  sceneFile?: string;
+  loadedBytes?: number;
+  totalBytes?: number;
+  percent?: number;
+  aggregateLoadedBytes?: number;
+  aggregateTotalBytes?: number;
+  aggregatePercent?: number;
+  completedAssets?: number;
+  totalAssets?: number;
+  overallPercent?: number;
+  dependencyUrl?: string;
+  message?: string;
+};
+
 /**
  * ES6 Interactive Babylon Toolkit Scene Viewer (GLTF)
  * Example: navigate('/play', { state: { fromApp: true, rootPath: '/scenes/', sceneFile: 'sampleScene.gltf' } });
@@ -42,7 +59,6 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
     if (scene.isDisposed) return; // Note: Strict mode safety
     let disposed = false;
     let disposeObserver = scene.onDisposeObservable.add(() => { disposed = true; });
-    let assetsManager: AssetsManager | null = null;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // STEP 1 - Initialize the global runtime scene properties and react navigation system
@@ -98,58 +114,179 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
             Tools.Warn("Failed to locate script class: " + babylonGameMode);
         }
       }
-      // Load runtime assets using the toolkit assets manager which provides enhanced loading screen and dependency tracking features (e.g. for GLTF files with external dependencies like textures, binary geometry, etc.)
-      let assetIndex: number = 0;
-      let runtimeAssets:string [] = [babylonSceneFile];
-      assetsManager = new AssetsManager(scene);
-      // Add Primary Scene Load Task (GLTF Scene) - Note: The toolkit will automatically detect and load any additional dependencies referenced by the GLTF file (e.g. textures, binary geometry, etc.)
-      const sceneTask: MeshAssetTask = assetsManager.addMeshTask("BabylonScene.Task.0", null, babylonRootPath, babylonSceneFile);
-      sceneTask.onError = (task: MeshAssetTask, message?: string, exception?: any) => { console.error(message, exception); };
-      // Optional Additional Import Mesh Tasks (GLTF Meshes) - Note: These can be used to preload additional GLTF assets that are not directly referenced by the main scene file but may be needed at runtime (e.g. for dynamic instantiation via script)
-      if (babylonImportMeshes != null && babylonImportMeshes.length > 0) {
-        runtimeAssets = runtimeAssets.concat(babylonImportMeshes);
-        for (const meshFile of babylonImportMeshes) {
-          assetIndex++;
-          const meshTask: MeshAssetTask = assetsManager.addMeshTask(("BabylonScene.Task.Mesh." + assetIndex.toString()), "", babylonRootPath, meshFile);
-          meshTask.onError = (task: MeshAssetTask, message?: string, exception?: any) => { console.error(message, exception); };
+      // Load runtime assets with SceneLoader to get byte-level progress callbacks.
+      const totalTopLevelAssets: number = 1 + (babylonImportMeshes?.length || 0) + (babylonAssetFiles?.length || 0);
+      let completedTopLevelAssets: number = 0;
+      const loadedByFile: Map<string, number> = new Map<string, number>();
+      const totalByFile: Map<string, number> = new Map<string, number>();
+      const formatMb = (bytes: number): string => (bytes / (1024 * 1024)).toFixed(2);
+      const postAssetMessage = (messageName: string, data: AssetProgressMessage): void => {
+        GameManager.EventBus.PostMessage(messageName, data);
+      };
+      const postOverallProgressMessage = (assetName: string): void => {
+        postAssetMessage("OnLoadProgress", {
+          assetName,
+          fileName: assetName,
+          rootPath: babylonRootPath,
+          sceneFile: babylonSceneFile,
+          completedAssets: completedTopLevelAssets,
+          totalAssets: totalTopLevelAssets,
+          overallPercent: totalTopLevelAssets > 0 ? (completedTopLevelAssets / totalTopLevelAssets) * 100 : 100,
+          message: `Overall progress ${completedTopLevelAssets}/${totalTopLevelAssets} assets`
+        });
+      };
+      const logProgress = (fileName: string, event: ISceneLoaderProgressEvent): void => {
+        loadedByFile.set(fileName, event.loaded);
+        if (event.lengthComputable) {
+          totalByFile.set(fileName, event.total);
         }
-      }
-      // Optional Additional Asset Container Tasks (GLTF Prefabs) - Note: These can be used to preload additional GLTF assets that are not directly referenced by the main scene file but may be needed at runtime (e.g. for dynamic instantiation via script)
-      if (babylonAssetFiles != null && babylonAssetFiles.length > 0) {
-        let assetIndex: number = 0;
-        runtimeAssets = runtimeAssets.concat(babylonAssetFiles);
-        for (const assetFile of babylonAssetFiles) {
-          assetIndex++;
-          const assetTask: ContainerAssetTask = assetsManager.addContainerTask(("BabylonScene.Task." + assetIndex.toString()), null, babylonRootPath, assetFile);
-          assetTask.onSuccess = (task: ContainerAssetTask) => {
-              if (task.loadedContainer != null) {
-                  const assetTaskKey: string = task.sceneFilename.toString().toLowerCase();
-                  SceneManager.RegisterAssetContainer(scene, assetTaskKey, task.loadedContainer);
-              }
-          };
-          assetTask.onError = (task: ContainerAssetTask, message?: string, exception?: any) => { console.error(message, exception); };
-        }
-      }
-      await SceneManager.LoadRuntimeAssets(assetsManager, runtimeAssets, async () => {
-        if (disposed || scene.isDisposed) return; // Note: Strict mode safety
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // STEP 3 - Finalize scene setup after assets are loaded and hide the loading screen
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        try {
-          console.log("Babylon scene assets loaded successfully");
-        } catch (e) {
-          console.error("Failed to initialize game mode", e);
-        } finally {
-          GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-          GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
+        let aggregateLoaded: number = 0;
+        let aggregateTotal: number = 0;
+        loadedByFile.forEach((value: number) => { aggregateLoaded += value; });
+        totalByFile.forEach((value: number) => { aggregateTotal += value; });
+        const filePercent: string = event.lengthComputable && event.total > 0 ? ((event.loaded / event.total) * 100).toFixed(1) + "%" : "n/a";
+        const aggregatePercent: string = aggregateTotal > 0 ? ((aggregateLoaded / aggregateTotal) * 100).toFixed(1) + "%" : "n/a";
+        postAssetMessage("OnAssetProgress", {
+          assetName: fileName,
+          fileName,
+          rootPath: babylonRootPath,
+          sceneFile: babylonSceneFile,
+          loadedBytes: event.loaded,
+          totalBytes: event.lengthComputable ? event.total : undefined,
+          percent: event.lengthComputable && event.total > 0 ? (event.loaded / event.total) * 100 : undefined,
+          aggregateLoadedBytes: aggregateLoaded,
+          aggregateTotalBytes: aggregateTotal > 0 ? aggregateTotal : undefined,
+          aggregatePercent: aggregateTotal > 0 ? (aggregateLoaded / aggregateTotal) * 100 : undefined,
+          completedAssets: completedTopLevelAssets,
+          totalAssets: totalTopLevelAssets,
+          message: event.lengthComputable
+            ? `Loading ${fileName} ${formatMb(event.loaded)}MB / ${formatMb(event.total)}MB (${filePercent})`
+            : `Loading ${fileName} ${formatMb(event.loaded)}MB / unknown`
+        });
+      };
+      const makeGltfPluginOptions = (fileName: string) => ({
+        gltf: {
+          preprocessUrlAsync: async (url: string) => {
+            postAssetMessage("OnAssetDependency", {
+              assetName: fileName,
+              fileName,
+              rootPath: babylonRootPath,
+              sceneFile: babylonSceneFile,
+              dependencyUrl: url,
+              completedAssets: completedTopLevelAssets,
+              totalAssets: totalTopLevelAssets,
+              message: `Dependency request for ${fileName}: ${url}`
+            });
+            return url;
+          }
         }
       });
+
+      // Primary scene import.
+      postOverallProgressMessage(babylonSceneFile);
+      await ImportMeshAsync(babylonSceneFile, scene, {
+        meshNames: null,
+        rootUrl: babylonRootPath,
+        onProgress: (event: ISceneLoaderProgressEvent) => {
+          logProgress(babylonSceneFile, event);
+        },
+        pluginOptions: makeGltfPluginOptions(babylonSceneFile)
+      });
+      completedTopLevelAssets++;
+      postOverallProgressMessage(babylonSceneFile);
+      postAssetMessage("OnAssetComplete", {
+        assetName: babylonSceneFile,
+        fileName: babylonSceneFile,
+        rootPath: babylonRootPath,
+        sceneFile: babylonSceneFile,
+        completedAssets: completedTopLevelAssets,
+        totalAssets: totalTopLevelAssets,
+        message: `Completed ${babylonSceneFile} (${completedTopLevelAssets}/${totalTopLevelAssets})`
+      });
+
+      // Optional additional mesh imports.
+      if (babylonImportMeshes != null && babylonImportMeshes.length > 0) {
+        for (const meshFile of babylonImportMeshes) {
+          postOverallProgressMessage(meshFile);
+          await ImportMeshAsync(meshFile, scene, {
+            meshNames: "",
+            rootUrl: babylonRootPath,
+            onProgress: (event: ISceneLoaderProgressEvent) => {
+              logProgress(meshFile, event);
+            },
+            pluginOptions: makeGltfPluginOptions(meshFile)
+          });
+          completedTopLevelAssets++;
+          postOverallProgressMessage(meshFile);
+          postAssetMessage("OnAssetComplete", {
+            assetName: meshFile,
+            fileName: meshFile,
+            rootPath: babylonRootPath,
+            sceneFile: babylonSceneFile,
+            completedAssets: completedTopLevelAssets,
+            totalAssets: totalTopLevelAssets,
+            message: `Completed ${meshFile} (${completedTopLevelAssets}/${totalTopLevelAssets})`
+          });
+        }
+      }
+
+      // Optional asset containers for prefab-style content.
+      if (babylonAssetFiles != null && babylonAssetFiles.length > 0) {
+        for (const assetFile of babylonAssetFiles) {
+          postOverallProgressMessage(assetFile);
+          const loadedContainer = await LoadAssetContainerAsync(assetFile, scene, {
+            rootUrl: babylonRootPath,
+            onProgress: (event: ISceneLoaderProgressEvent) => {
+              logProgress(assetFile, event);
+            },
+            pluginOptions: makeGltfPluginOptions(assetFile)
+          });
+          if (loadedContainer != null) {
+            const assetTaskKey: string = assetFile.toLowerCase();
+            SceneManager.RegisterAssetContainer(scene, assetTaskKey, loadedContainer);
+          }
+          completedTopLevelAssets++;
+          postOverallProgressMessage(assetFile);
+          postAssetMessage("OnAssetComplete", {
+            assetName: assetFile,
+            fileName: assetFile,
+            rootPath: babylonRootPath,
+            sceneFile: babylonSceneFile,
+            completedAssets: completedTopLevelAssets,
+            totalAssets: totalTopLevelAssets,
+            message: `Completed ${assetFile} (${completedTopLevelAssets}/${totalTopLevelAssets})`
+          });
+        }
+      }
+
+      postAssetMessage("OnLoadComplete", {
+        assetName: babylonSceneFile,
+        fileName: babylonSceneFile,
+        rootPath: babylonRootPath,
+        sceneFile: babylonSceneFile,
+        completedAssets: completedTopLevelAssets,
+        totalAssets: totalTopLevelAssets,
+        overallPercent: totalTopLevelAssets > 0 ? (completedTopLevelAssets / totalTopLevelAssets) * 100 : 100,
+        message: `Load complete: ${completedTopLevelAssets}/${totalTopLevelAssets} assets`
+      });
+
+      if (disposed || scene.isDisposed) return; // Note: Strict mode safety
+
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      // STEP 3 - Finalize scene setup after assets are loaded and hide the loading screen
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      try {
+        console.log("Babylon scene assets loaded successfully");
+      } catch (e) {
+        console.error("Failed to initialize game mode", e);
+      } finally {
+        GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
+        GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
+      }
     } catch (error) {
       GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       console.error("Failed to load babylon scene assets", error);
     } finally {
-      assetsManager = null;
       if (!disposed && !scene.isDisposed && disposeObserver) {
         scene.onDisposeObservable.remove(disposeObserver);
       }

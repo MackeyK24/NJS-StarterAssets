@@ -15,7 +15,6 @@ class GameManager {
     /** Initialize the game runtime environment */
     public static async InitializeRuntime(scene:Scene, navigateToFunction:any = null, enablePhysics:boolean = true, showLoadingScreen:boolean = true, hideEngineLoadingUI:boolean = false): Promise<void> {
         if (scene.isDisposed) return; // Note: Strict mode safety
-        GameManager.EventBus.ResetHandlers(); // Note: Reset any existing event handlers to prevent duplicates when navigating between scenes
         await SceneManager.InitializeRuntime(scene.getEngine(), { showDefaultLoadingScreen: showLoadingScreen, hideLoadingUIWithEngine: hideEngineLoadingUI });
         if (GameManager.IsDevelopmentMode) await import("@babylonjs/inspector");
         await import("@babylonjs-toolkit/dlc/DebugInformation");
@@ -82,14 +81,6 @@ class GameManager {
                 splash.addEventListener("transitionend", onFadeEnd);
             }
         }, delay);
-    }
-    /** Update the splash screen status message */
-    public static UpdateSplashScreenStatus(message: string): void {
-        const splash = document.getElementById("xbabylonjsSplashScreen");
-        if (splash) {
-            const statusText = splash.querySelector("#xbabylonjsStatusTextDiv");
-            if (statusText) statusText.textContent = message;
-        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
