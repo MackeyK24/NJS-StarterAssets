@@ -9,7 +9,8 @@ import { SceneManager, LocalMessageBus } from "@babylonjs-toolkit/next";
 
 // Preload Game Mode Side Effects
 import "./classes/DefaultGameMode"; 
-import "./classes/DemoGameMode"; 
+import "./classes/PlayerControllerDemo"; 
+import "./classes/RaycastVehicleDemo"; 
 
 class GameManager {
     /** Initialize the game runtime environment */

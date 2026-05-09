@@ -12,7 +12,7 @@ export class DefaultGameMode extends ScriptComponent {
     }
 
     protected onSceneReady(data: any): void {
-        console.log("DefaultGameMode - OnSceneReady():", data);
+        console.log("DefaultGameMode - Ready");
     }
 
     public override dispose(): void {

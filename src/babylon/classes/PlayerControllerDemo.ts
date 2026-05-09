@@ -4,16 +4,16 @@ import { SceneManager, ScriptComponent, LocalMessageBus } from "@babylonjs-toolk
 import { ThirdPersonPlayerController } from "@babylonjs-toolkit/dlc";
 import GameManager from "../globals";
 
-export class DemoGameMode extends ScriptComponent {
+export class PlayerControllerDemo extends ScriptComponent {
     private readonly onSceneReadyHandler = (data: any) => { this.onSceneReady(data); };
 
-    constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "DemoGameMode") {
+    constructor(transform: TransformNode, scene: Scene, properties: any = {}, alias: string = "PlayerControllerDemo") {
         super(transform, scene, properties, alias);
         GameManager.EventBus.OnMessage("OnSceneReady", this.onSceneReadyHandler);
     }
 
     protected onSceneReady(data: any): void {
-        console.log("DemoGameMode - OnSceneReady():", data);
+        console.log("PlayerControllerDemo - Ready");
         try {
             const player = this.scene.getNodeByName("PlayerArmature") as TransformNode;
             if (player != null) {
@@ -26,9 +26,6 @@ export class DemoGameMode extends ScriptComponent {
             }
         } catch (e) {
             console.error("Failed to attach player controller", e);
-        } finally {
-            SceneManager.HideLoadingScreen(this.scene.getEngine());
-            SceneManager.FocusRenderCanvas(this.scene);
         }
     }
 
@@ -38,4 +35,4 @@ export class DemoGameMode extends ScriptComponent {
     }
 }
 
-SceneManager.RegisterClass("DemoGameMode", DemoGameMode);
+SceneManager.RegisterClass("PlayerControllerDemo", PlayerControllerDemo);

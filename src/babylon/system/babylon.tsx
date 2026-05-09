@@ -281,14 +281,21 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         console.error("Failed to initialize game mode", e);
       } finally {
         GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-        GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       }
     } catch (error) {
-      GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       console.error("Failed to load babylon scene assets", error);
     } finally {
-      if (!disposed && !scene.isDisposed && disposeObserver) {
-        scene.onDisposeObservable.remove(disposeObserver);
+      try {
+        GameManager.HideSplashScreen(scene, 3000); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
+      } catch (e) {
+        console.error("Failed to initialize game mode", e);
+      }
+      try {
+        if (!disposed && !scene.isDisposed && disposeObserver) {
+          scene.onDisposeObservable.remove(disposeObserver);
+        }
+      } catch (e) {
+        console.error("Failed to initialize game mode", e);
       }
     }
   }, [rootPath, gameMode, sceneFile, assetFiles, importMeshes, auxiliaryData, allowQueryParams, location, navigate]);
