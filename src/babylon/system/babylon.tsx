@@ -55,7 +55,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
       // STEP 2 - Load the babylon scene assets (GLTF) using the toolkit assets manager
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
-      let isDevelopment: boolean = process.env.NODE_ENV === "development";
+      let isDevelopment: boolean = import.meta.env.DEV;
       let defaultPageUrl: URL = new URL(window.location.href.replace("#?", "?"));
       let babylonRootPath: string = rootPath || "/scenes/";
       let babylonSceneFile: string = sceneFile || "mainmenu.gltf";

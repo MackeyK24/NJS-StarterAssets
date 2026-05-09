@@ -2,24 +2,24 @@
 
 /*
  * =================================================================
- * NJS React Framework Platform Services
+ * ES6 React Framework Platform Services
  * =================================================================
- * Unified navigation hook for React Router
- * This is the default implementation for Next.js applications
+ * Cross-platform navigation via React Context injection (A2).
+ *
+ * The babylon/ folder is router-agnostic. Host apps provide an
+ * adapter that wraps their router's hooks and supplies the value
+ * to <NavigationProvider>. Works with react-router-dom,
+ * @tanstack/react-router, next/navigation, etc.
  * =================================================================
  */
 
-import { useCallback, useMemo } from "react";
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { createContext, createElement, useContext, ReactNode } from "react";
 
 // Type definitions for unified navigation
 export type NavigationState = {
   fromApp?: boolean;
-  gameMode?: string;
   rootPath?: string;
   sceneFile?: string;
-  assetFiles?: string[];
-  importMeshes?: string[];
   auxiliaryData?: string;
   [key: string]: any;
 };
@@ -32,76 +32,34 @@ export type LocationState = {
 
 export type UnifiedNavigateFunction = (path: string, options?: { state?: NavigationState; replace?: boolean }) => void;
 
-// Session storage key for navigation state
-const NAV_STATE_KEY = 'njs_navigation_state';
-
-/**
- * Unified navigation hook for Next.js
- * Drop-in replacement for React Router navigation with state support
- */
-export function useUnifiedNavigation(): {
+export type UnifiedNavigation = {
   navigate: UnifiedNavigateFunction;
   location: LocationState;
-} {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+};
 
-  const navigate: UnifiedNavigateFunction = useCallback((path: string, options?: { state?: NavigationState; replace?: boolean }) => {
-    // Store state in session storage if provided (client-side only)
-    if (typeof window !== 'undefined') {
-      if (options?.state) {
-        try {
-          sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(options.state));
-        } catch (e) {
-          console.warn('Failed to store navigation state:', e);
-        }
-      } else {
-        // Clear state if no state is provided
-        try {
-          sessionStorage.removeItem(NAV_STATE_KEY);
-        } catch (e) {
-          console.warn('Failed to clear navigation state:', e);
-        }
-      }
-    }
+const NavigationContext = createContext<UnifiedNavigation | null>(null);
 
-    // Navigate using Next.js router without state in URL
-    if (options?.replace) {
-      router.replace(path);
-    } else {
-      router.push(path);
-    }
-  }, [router]);
-
-  const location: LocationState = useMemo(() => {
-    // Retrieve state from session storage (client-side only)
-    let state: NavigationState | undefined;
-    if (typeof window !== 'undefined') {
-      try {
-        const storedState = sessionStorage.getItem(NAV_STATE_KEY);
-        if (storedState) {
-          state = JSON.parse(storedState);
-        }
-      } catch (e) {
-        console.warn('Failed to parse navigation state:', e);
-      }
-    }
-
-    return {
-      pathname: pathname || '/',
-      search: searchParams?.toString() ? `?${searchParams.toString()}` : '',
-      state
-    };
-  }, [pathname, searchParams]);
-
-  return { navigate, location };
+/**
+ * Host apps wrap their tree with <NavigationProvider value={...}>.
+ * The value is supplied by a tiny per-host adapter that bridges the
+ * host router (react-router-dom, @tanstack/react-router, next, ...)
+ * to the UnifiedNavigation shape.
+ */
+export function NavigationProvider({ value, children }: { value: UnifiedNavigation; children?: ReactNode }) {
+  return createElement(NavigationContext.Provider, { value }, children);
 }
 
 /**
- * Hook for Next.js - use this in Next.js apps
- * This is an alias for useUnifiedNavigation for explicit usage
+ * Consumer hook used everywhere inside babylon/.
+ * Throws if no <NavigationProvider> is mounted above.
  */
-export function useNextNavigation() {
-  return useUnifiedNavigation();
+export function useUnifiedNavigation(): UnifiedNavigation {
+  const ctx = useContext(NavigationContext);
+  if (!ctx) {
+    throw new Error(
+      "useUnifiedNavigation: missing <NavigationProvider>. " +
+      "Wrap your app with a host-specific navigation adapter."
+    );
+  }
+  return ctx;
 }

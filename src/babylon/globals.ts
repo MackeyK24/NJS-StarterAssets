@@ -9,8 +9,7 @@ import { SceneManager, LocalMessageBus } from "@babylonjs-toolkit/next";
 
 // Preload Game Mode Side Effects
 import "./classes/DefaultGameMode"; 
-import "./classes/DemoOneGameMode"; 
-import "./classes/DemoTwoGameMode"; 
+import "./classes/DemoGameMode"; 
 
 class GameManager {
     /** Initialize the game runtime environment */
@@ -33,6 +32,7 @@ class GameManager {
         {
             if (globalThis.HK == null || globalThis.HKP == null)
             {
+                // @ts-ignore - This initializes fresh physics for this scene
                 globalThis.HK = await HavokPhysics();
                 globalThis.HKP = new HavokPlugin(false);
             }
@@ -62,7 +62,7 @@ class GameManager {
 
     /** Show the splash screen */
     public static ShowSplashScreen(): void {
-        const splash = document.getElementById("splash-screen");
+        const splash = document.getElementById("xbabylonjsSplashScreen");
         if (splash) splash.style.display = "block";
     }
     /** Hide the splash screen with optional delay and fade effect */
@@ -72,7 +72,7 @@ class GameManager {
                 SceneManager.HideLoadingScreen(scene.getEngine());
                 SceneManager.FocusRenderCanvas(scene);
             }
-            const splash = document.getElementById("splash-screen");
+            const splash = document.getElementById("xbabylonjsSplashScreen");
             if (splash) {
                 splash.style.opacity = "0";
                 const onFadeEnd = () => {
@@ -85,7 +85,7 @@ class GameManager {
     }
     /** Update the splash screen status message */
     public static UpdateSplashScreenStatus(message: string): void {
-        const splash = document.getElementById("splash-screen");
+        const splash = document.getElementById("xbabylonjsSplashScreen");
         if (splash) {
             const statusText = splash.querySelector("#xbabylonjsStatusTextDiv");
             if (statusText) statusText.textContent = message;
@@ -142,7 +142,7 @@ class GameManager {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Development Mode Flag
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static get IsDevelopmentMode(): boolean { return process.env.NODE_ENV === "development"; }
+    public static get IsDevelopmentMode(): boolean { return import.meta.env.DEV; }
 }
 export enum StorageType { Local = 0, Session = 1 }
 

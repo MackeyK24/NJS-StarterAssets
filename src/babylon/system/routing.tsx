@@ -19,7 +19,7 @@ interface ApplicationRouteProps {
 export default function ApplicationRoute({ children, redirectTo = '/', allowDevMode = false }: ApplicationRouteProps) {
   const { navigate, location } = useUnifiedNavigation();
   const allowByState: boolean = Boolean(location.state?.fromApp);
-  const isDevelopment: boolean = process.env.NODE_ENV === "development";
+  const isDevelopment: boolean = import.meta.env.DEV;
   const isRouteAllowed: boolean = allowByState || (allowDevMode && isDevelopment);
 
   useEffect(() => {

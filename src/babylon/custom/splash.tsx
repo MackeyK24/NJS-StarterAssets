@@ -7,8 +7,7 @@ function SplashScreen() {
   const spinnerSrc = "https://cdn.babylonjs.com/Assets/loadingIcon.png";
 
   return (
-    <div className="splash" id="splash-screen">
-
+    <div className="splash" id="xbabylonjsSplashScreen">
       <div
         id="xbabylonjsLoadingDiv"
         style={{
@@ -24,23 +23,6 @@ function SplashScreen() {
           inset: 0,
         }}
       >
-        <div
-          id="xbabylonjsLoadingTextDiv"
-          style={{
-            position: "absolute",
-            left: 0,
-            top: "50%",
-            marginTop: "80px",
-            width: "100%",
-            height: "20px",
-            fontFamily: "Arial",
-            fontSize: "14px",
-            color: "white",
-            textAlign: "center",
-            zIndex: 1,
-          }}
-        />
-
         <div
           id="xbabylonjsStatusTextDiv"
           style={{
@@ -58,7 +40,22 @@ function SplashScreen() {
         >
          Loading...
         </div>
-
+        <div
+          id="xbabylonjsLoadingTextDiv"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: "50%",
+            marginTop: "80px",
+            width: "100%",
+            height: "20px",
+            fontFamily: "Arial",
+            fontSize: "14px",
+            color: "white",
+            textAlign: "center",
+            zIndex: 1,
+          }}
+        />
         <img
           id="xbabylonjsLoadingImage"
           src={logoSrc}
@@ -73,7 +70,6 @@ function SplashScreen() {
             position: "absolute",
           }}
         />
-
         <div
           style={{
             width: "320px",
@@ -101,7 +97,6 @@ function SplashScreen() {
           />
         </div>
       </div>
-
     </div>
   )
 }
