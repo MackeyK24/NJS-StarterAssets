@@ -18,9 +18,13 @@ import { createContext, createElement, useContext, ReactNode } from "react";
 // Type definitions for unified navigation
 export type NavigationState = {
   fromApp?: boolean;
+  gameMode?: string;
   rootPath?: string;
   sceneFile?: string;
+  assetFiles?: string[];
+  importMeshes?: string[];
   auxiliaryData?: string;
+  hideSplashScreen?: boolean;
   [key: string]: any;
 };
 
