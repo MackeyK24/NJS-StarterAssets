@@ -13,6 +13,12 @@ export class PlayerControllerDemo extends ScriptComponent {
     }
 
     protected onSceneReady(data: any): void {
+        setTimeout(() => { // Note: Timeout is a workaround to ensure this runs after the scene ready event processing completes
+            this.finishSceneReady(data);
+        }, 1000);
+    }
+
+    protected finishSceneReady(data: any): void {
         console.log("PlayerControllerDemo - Ready");
         try {
             const player = this.scene.getNodeByName("PlayerArmature") as TransformNode;
