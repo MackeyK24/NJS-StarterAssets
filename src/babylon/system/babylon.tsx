@@ -95,13 +95,9 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
           babylonAuxiliaryData = defaultPageUrl.searchParams.get("aux") || babylonAuxiliaryData;
         }
       }
+      // Set the auxiliary data on the scene so that it can be accessed by any script or component that has a reference to the scene
       if (babylonAuxiliaryData != null && babylonAuxiliaryData !== "") {
         SceneManager.SetAuxiliaryData(scene, babylonAuxiliaryData);
-      }
-      if ((babylonRootPath != null && babylonRootPath !== "" && babylonRootPath.toLowerCase() === "_blank") || (babylonSceneFile != null && babylonSceneFile !== "" && babylonSceneFile.toLowerCase() === "_blank")) {
-          GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-          if (hideSplashScreen) GameManager.HideSplashScreen(scene);
-          return; // Note: Bail Out Early
       }
       // Instantiate Game Mode Script Component Before Loading Assets
       if (babylonGameMode != null && babylonGameMode !== "") {
@@ -116,6 +112,12 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         } else {
             Tools.Warn("Failed to locate script class: " + babylonGameMode);
         }
+      }
+      // Validate blank load case and bail out early if detected (Note: This allows the scene to be loaded without assets for quick testing of game mode logic, and also serves as a fallback if the asset loading fails for any reason since the progress callbacks won't fire in that case) 
+      if ((babylonRootPath != null && babylonRootPath !== "" && babylonRootPath.toLowerCase() === "_blank") || (babylonSceneFile != null && babylonSceneFile !== "" && babylonSceneFile.toLowerCase() === "_blank")) {
+          GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
+          if (hideSplashScreen) GameManager.HideSplashScreen(scene);
+          return; // Note: Bail Out Early
       }
       // Load runtime assets with SceneLoader to get byte-level progress callbacks.
       const totalTopLevelAssets: number = 1 + (babylonImportMeshes?.length || 0) + (babylonAssetFiles?.length || 0);
