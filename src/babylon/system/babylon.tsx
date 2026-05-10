@@ -27,6 +27,7 @@ export declare type SceneViewerProps = {
   auxiliaryData?: any;
   allowQueryParams?: boolean;
   enableCustomOverlay?: boolean;
+  autoHideSplashScreen?: boolean;
 };
 
 type AssetProgressMessage = {
@@ -53,18 +54,19 @@ type AssetProgressMessage = {
  */
 
 function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes<HTMLCanvasElement>) {
-  const { fullPage, gameMode, rootPath, sceneFile, assetFiles, importMeshes, auxiliaryData, allowQueryParams, enableCustomOverlay } = props;
+  const { fullPage, gameMode, rootPath, sceneFile, assetFiles, importMeshes, auxiliaryData, allowQueryParams, enableCustomOverlay, autoHideSplashScreen } = props;
   const { navigate, location } = useUnifiedNavigation();
   const createScene = useCallback(async (scene:Scene) => {
     if (scene.isDisposed) return; // Note: Strict mode safety
     let disposed = false;
     let disposeObserver = scene.onDisposeObservable.add(() => { disposed = true; });
+    let hideSplashScreen = (autoHideSplashScreen === undefined || autoHideSplashScreen == null) ? true : autoHideSplashScreen; // Note: Default to true if not provided
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // STEP 1 - Initialize the global runtime scene properties and react navigation system
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     try {
-      GameManager.ShowSplashScreen();
+      GameManager.ShowSplashScreen(); // Note: Always Show Game Manager Splash Screen
       await GameManager.InitializeRuntime(scene, navigate, true, false, false);
       if (disposed || scene.isDisposed) return; // Note: Strict mode safety
     
@@ -86,6 +88,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         babylonAssetFiles = location?.state?.assetFiles || babylonAssetFiles;
         babylonImportMeshes = location?.state?.importMeshes || babylonImportMeshes;
         babylonAuxiliaryData = location?.state?.auxiliaryData || babylonAuxiliaryData;
+        hideSplashScreen = location?.state?.autoHideSplashScreen || hideSplashScreen;
         if (isDevelopment === true) { // Note: Unity Editor Development Preview Query Param Support
           babylonRootPath = defaultPageUrl.searchParams.get("root") || babylonRootPath;
           babylonSceneFile = defaultPageUrl.searchParams.get("scene") || babylonSceneFile;
@@ -97,7 +100,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       }
       if ((babylonRootPath != null && babylonRootPath !== "" && babylonRootPath.toLowerCase() === "_blank") || (babylonSceneFile != null && babylonSceneFile !== "" && babylonSceneFile.toLowerCase() === "_blank")) {
           GameManager.EventBus.PostMessage("OnSceneReady", { scene, rootPath: babylonRootPath, sceneFile: babylonSceneFile });
-          GameManager.HideSplashScreen(scene);
+          if (hideSplashScreen) GameManager.HideSplashScreen(scene);
           return; // Note: Bail Out Early
       }
       // Instantiate Game Mode Script Component Before Loading Assets
@@ -286,7 +289,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
       console.error("Failed to load babylon scene assets", error);
     } finally {
       try {
-        GameManager.HideSplashScreen(scene, GameManager.HideSplashScreenDelay); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
+        if (hideSplashScreen) GameManager.HideSplashScreen(scene, GameManager.HideSplashScreenDelay); // Note: Optional delay to allow players to see the loaded scene before the splash screen disappears
       } catch (e) {
         console.error("Failed to initialize game mode", e);
       }
@@ -298,7 +301,7 @@ function BabylonSceneViewer(props: SceneViewerProps & React.CanvasHTMLAttributes
         console.error("Failed to initialize game mode", e);
       }
     }
-  }, [rootPath, gameMode, sceneFile, assetFiles, importMeshes, auxiliaryData, allowQueryParams, location, navigate]);
+  }, [rootPath, gameMode, sceneFile, assetFiles, importMeshes, auxiliaryData, allowQueryParams, autoHideSplashScreen, location, navigate]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   // OPTIONAL: Add custom loading div over the root div and disable the default loading screen
