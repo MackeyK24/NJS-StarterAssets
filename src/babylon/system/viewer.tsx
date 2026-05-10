@@ -48,7 +48,7 @@ function BaseSceneViewer(props: BabylonjsProps & React.CanvasHTMLAttributes<HTML
           if (!canvas) return;
 
           try {
-              if (typeof navigator !== "undefined" && navigator.gpu && webgpu) {
+              if (typeof navigator !== "undefined" && (navigator as any).gpu && webgpu) {            
                   const webgpuEngine = new WebGPUEngine(canvas, {
                       ...engineOptions,
                       antialias,
