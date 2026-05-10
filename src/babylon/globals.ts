@@ -83,6 +83,35 @@ class GameManager {
             }
         }, delay);
     }
+    /** Update the status text on the splash screen (Direct Access Hack) */
+    public static UpdateSplashScreenStatus(text: string): void {
+        const splash = document.getElementById("xbabylonjsSplashScreen");
+        if (splash) {
+            splash.style.display = "block";
+            const status = splash.querySelector("#xbabylonjsStatusTextDiv");
+            if (status) status.textContent = text;
+        }
+    }
+    /** KEEP-FOR-REFERENCE: Navigate to the classic demo scene with optional page reload (Note: This is just an example of navigation from scene, replace or remove as needed) */
+    // public static ClassicNavigateToHack(reload: boolean): void {
+    //     window.history.pushState(
+    //     {
+    //         fromApp: true,
+    //         rootPath: "/scenes/",
+    //         sceneFile: "samplescene.gltf",
+    //         gameMode: "PlayerControllerDemo",
+    //         importMeshes: ["playerarmature.gltf"],
+    //         hideSplashScreen: true
+    //     },
+    //     "",
+    //     "/play"
+    //     );
+    //     if (reload) {
+    //         window.location.reload();
+    //     } else {
+    //         window.dispatchEvent(new PopStateEvent("popstate"));
+    //     }
+    // }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Global Game State
