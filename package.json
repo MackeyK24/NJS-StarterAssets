@@ -14,7 +14,8 @@
     "start:colyseus": "NODE_ENV=production tsx server/server-colyseus.ts & sleep 3 && open http://localhost:8080",
     "start:socketio": "NODE_ENV=production tsx server/server-socketio.ts & sleep 3 && open http://localhost:8080",
     "lint": "eslint",
-    "kill-port": "npx kill-port 8080"
+    "kill-port": "npx kill-port 8080",
+    "update-babylon": "node tools/toolkit/update-babylon.cjs"
   },
   "dependencies": {
     "@babylonjs-toolkit/dlc": "9.5.0",
