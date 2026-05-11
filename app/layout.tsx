@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
-import { NextNavAdapter } from "@/src/router";
+import { NextNavAdapter } from "./adapter";
 import "./globals.css";
 
 const geistSans = Geist({

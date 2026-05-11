@@ -21,7 +21,7 @@ import {
   UnifiedNavigateFunction,
   LocationState,
   NavigationState,
-} from "./babylon/system/platform";
+} from "../src/babylon/system/platform";
 
 const STATE_KEY_PREFIX = "babylon-nav-state:";
 
