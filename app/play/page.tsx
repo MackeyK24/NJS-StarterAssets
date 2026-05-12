@@ -6,7 +6,7 @@ export default function Play() {
   return (
     <Suspense>
       <ApplicationRoute allowDevMode={true}>
-          <BabylonSceneViewer fullPage={true} sceneUrl="/scenes/mainmenu.gltf" allowQueryParams={true} enableCustomOverlay={false} />
+          <BabylonSceneViewer fullPage={true} allowQueryParams={true} enableCustomOverlay={false} />
       </ApplicationRoute>
     </Suspense>
   );
