@@ -19,8 +19,8 @@
     "update-babylon": "node tools/toolkit/update-babylon.cjs"
   },
   "dependencies": {
-    "@babylonjs-toolkit/dlc": "9.5.1",
-    "@babylonjs-toolkit/next": "9.5.1",
+    "@babylonjs-toolkit/dlc": "9.5.10",
+    "@babylonjs-toolkit/next": "9.5.10",
     "@babylonjs/core": "^9.5.0",
     "@babylonjs/gui": "^9.5.0",
     "@babylonjs/havok": "^1.3.10",
