@@ -14,7 +14,7 @@
  * =================================================================
  */
 
-import { createElement, ReactNode, useCallback, useMemo } from "react";
+import { createElement, ReactNode, useCallback, useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   NavigationProvider,
@@ -22,6 +22,7 @@ import {
   LocationState,
   NavigationState,
 } from "../src/babylon/system/platform";
+import GameManager from "../src/babylon/globals";
 
 const STATE_KEY_PREFIX = "babylon-nav-state:";
 
@@ -65,6 +66,14 @@ export function NextNavAdapter({ children }: { children: ReactNode }) {
     },
     [router]
   );
+
+  // Note: Register the navigation hook globally so GameManager.NavigateTo works on
+  // every page, even before the Babylon runtime has initialized. NextNavAdapter
+  // wraps the whole app (in app/layout) and already owns the navigate function.
+  useEffect(() => {
+    GameManager.SetReactNavigationHook(navigate);
+    return () => GameManager.DeleteReactNavigationHook();
+  }, [navigate]);
 
   const search = useMemo(() => {
     const s = searchParams?.toString() ?? "";
