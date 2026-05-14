@@ -9,16 +9,15 @@ export default function PlayDemoButton() {
      * This ensures that Babylon and all related dependencies are only loaded when the user clicks "Play Demo", optimizing initial load performance.
      * Game code should use game manager, for example:
      * GameManager.NavigateTo("/play", {
-     *     gameMode: "DefaultGameMode",
+     *     gameMode: "PlayerControllerDemo",
      *     sceneUrl: GameManager.PlaygroundRepo + "samplescene.gltf",
      * });
      */
     navigate('/play', {
       state: {
         fromApp: true,
-        gameMode: 'DemoGameMode',
-        sceneUrl: 'https://dlyp4oy8lme1v.cloudfront.net/playground/samplescene.gltf',
-        importMeshes: ['playerarmature.gltf'],
+        gameMode: 'PlayerControllerDemo',
+        sceneUrl: 'https://dlyp4oy8lme1v.cloudfront.net/playground/samplescene.gltf'
       },
     });
   };
