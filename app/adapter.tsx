@@ -16,12 +16,7 @@
 
 import { createElement, ReactNode, useCallback, useEffect, useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  NavigationProvider,
-  UnifiedNavigateFunction,
-  LocationState,
-  NavigationState,
-} from "../src/babylon/system/platform";
+import { NavigationProvider, UnifiedNavigateFunction, LocationState, NavigationState } from "../src/babylon/system/platform";
 import GameManager from "../src/babylon/globals";
 
 const STATE_KEY_PREFIX = "babylon-nav-state:";

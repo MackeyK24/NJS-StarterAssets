@@ -7,7 +7,10 @@ import { loadEnvConfig } from "@next/env";
 loadEnvConfig(process.cwd());
 
 const dev: boolean = process.env.NODE_ENV !== "production";
-const nextApp = next({ dev });
+// Force webpack bundler (not Turbopack) so next.config.ts webpack() runs and
+// NormalModuleReplacementPlugin can redirect PNG imports in the babylon submodule
+// to plain URL string modules. Turbopack doesn't support image file loaders.
+const nextApp = next({ dev, webpack: true });
 const handle = nextApp.getRequestHandler();
 
 /**

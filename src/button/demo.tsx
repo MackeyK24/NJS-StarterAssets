@@ -1,14 +1,25 @@
 'use client';
 
-import { SceneManager, ScriptComponent, Utilities } from "@babylonjs-toolkit/next";
-import GameManager from "../babylon/globals";
+import { useUnifiedNavigation } from "../babylon/system/platform";
 
 export default function PlayDemoButton() {
+  const { navigate } = useUnifiedNavigation();
   const handlePlayDemo = () => {
-    GameManager.NavigateTo("/play", {
-      gameMode: "DemoGameMode",
-      sceneUrl: GameManager.PlaygroundRepo + "samplescene.gltf",
-      importMeshes: ["playerarmature.gltf"]
+    /* Use Native Navigation API to prevent ANY BABYLON CODE from being included in the main bundle.
+     * This ensures that Babylon and all related dependencies are only loaded when the user clicks "Play Demo", optimizing initial load performance.
+     * Game code should use game manager, for example:
+     * GameManager.NavigateTo("/play", {
+     *     gameMode: "DefaultGameMode",
+     *     sceneUrl: GameManager.PlaygroundRepo + "samplescene.gltf",
+     * });
+     */
+    navigate('/play', {
+      state: {
+        fromApp: true,
+        gameMode: 'DemoGameMode',
+        sceneUrl: 'https://dlyp4oy8lme1v.cloudfront.net/playground/samplescene.gltf',
+        importMeshes: ['playerarmature.gltf'],
+      },
     });
   };
 
